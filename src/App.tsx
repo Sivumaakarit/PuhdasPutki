@@ -106,6 +106,15 @@ const PRICING = [
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [consumption, setConsumption] = useState(15000);
+
+  const electricityPrice = 0.15; // €/kWh
+  const pumpCost = 2200; // Keskimääräinen hinta asennettuna
+  const currentCost = consumption * electricityPrice;
+  const minSavings = currentCost * 0.4;
+  const maxSavings = currentCost * 0.6;
+  const avgSavings = (minSavings + maxSavings) / 2;
+  const paybackYears = pumpCost / avgSavings;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -119,10 +128,14 @@ export default function App() {
       <div className="bg-brand-blue text-white py-2 px-6 text-sm hidden md:block">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex gap-6">
-            <a href="tel:+358401234567" className="flex items-center gap-2 hover:text-emerald-400 transition-colors">
+            <a href="tel:+358401234567" className="flex items-center gap-2 text-emerald-400 font-bold hover:text-white transition-colors">
               <Phone size={14} /> 040 123 4567
             </a>
-            <a href="mailto:info@puhdasputki.fi" className="flex items-center gap-2 hover:text-emerald-400 transition-colors">
+            <div className="flex items-center gap-2 text-emerald-400 font-bold">
+              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+              PÄIVYSTYS 24/7
+            </div>
+            <a href="mailto:info@puhdasputki.fi" className="hidden lg:flex items-center gap-2 hover:text-emerald-400 transition-colors">
               <Mail size={14} /> info@puhdasputki.fi
             </a>
           </div>
@@ -214,11 +227,11 @@ export default function App() {
               </div>
               
               <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
-                Me emme vain korjaa putkia, me varmistamme <span className="text-brand-accent">mielenrauhan.</span>
+                Ammattitaitoa, jolla on <span className="text-brand-accent">kasvot.</span>
               </h1>
               
               <p className="text-xl text-slate-300 mb-10 leading-relaxed">
-                Nykyaikainen LVI-kumppanisi Uudellamaalla. Läpinäkyvä hinnoittelu, aito asiantuntemus ja vastaus 24 tunnissa.
+                Putkimies <span className="text-white font-semibold">Helsinki, Espoo & Vantaa</span>. Nopeutta, johon voit luottaa. Hintaa, joka ei yllätä.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4">
@@ -332,6 +345,117 @@ export default function App() {
           </div>
         </section>
 
+        {/* Entrepreneur's Word Section */}
+        <section id="meista" className="section-padding grid lg:grid-cols-2 gap-16 items-center border-b border-slate-100">
+          <div>
+            <h2 className="text-sm font-bold text-brand-accent uppercase tracking-widest mb-3">Yrittäjän sana</h2>
+            <h3 className="text-4xl font-bold mb-6">"Haluamme tehdä asiat paremmin"</h3>
+            <div className="space-y-4 text-slate-600 text-lg leading-relaxed">
+              <p>
+                Perustimme PuhdasPutken, koska kyllästyimme alan epämääräisiin laskuihin ja siihen, ettei asentajaa saa kiinni hätätilanteessa.
+              </p>
+              <p>
+                Meille jokainen asiakas on naapuri. Seisomme työmme takana omilla kasvoillamme ja varmistamme, että jälki on sellaista, jota kehtaa esitellä.
+              </p>
+              <div className="pt-6">
+                <div className="font-bold text-brand-blue">Antti Asentaja</div>
+                <div className="text-sm text-slate-500 italic">Toimitusjohtaja & Perustaja</div>
+              </div>
+            </div>
+          </div>
+          <div className="relative">
+            <img 
+              src="https://picsum.photos/seed/founder/600/400" 
+              alt="Yrittäjä Antti" 
+              className="rounded-3xl shadow-lg w-full object-cover aspect-[3/2]"
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute -bottom-6 -left-6 bg-brand-accent text-white p-6 rounded-2xl shadow-xl">
+              <div className="text-3xl font-bold">15+</div>
+              <div className="text-sm font-medium">Vuoden kokemus</div>
+            </div>
+          </div>
+        </section>
+
+        {/* Savings Calculator Section */}
+        <section className="bg-brand-blue text-white py-24 overflow-hidden relative">
+          <div className="section-padding relative z-10">
+            <div className="grid lg:grid-cols-2 gap-16 items-center">
+              <div>
+                <h2 className="text-emerald-400 font-bold uppercase tracking-widest mb-3">Säästölaskuri</h2>
+                <h3 className="text-4xl font-bold mb-6">Paljonko säästäisit ilmalämpöpumpulla?</h3>
+                <p className="text-slate-300 text-lg mb-8">
+                  Nykyaikainen ilmalämpöpumppu voi laskea lämmityskustannuksiasi jopa 40-60%. Kokeile laskuriamme ja näe arvioitu säästösi.
+                </p>
+                <div className="space-y-6 bg-white/5 p-8 rounded-3xl border border-white/10 backdrop-blur-sm">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-end">
+                      <label className="text-sm font-bold uppercase tracking-wider text-slate-400">Vuosikulutus (kWh)</label>
+                      <div className="text-right">
+                        <span className="text-3xl font-bold text-emerald-400">{consumption.toLocaleString('fi-FI')}</span>
+                        <span className="text-emerald-400/60 ml-2 font-bold">kWh</span>
+                      </div>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="2000" 
+                      max="35000" 
+                      step="100" 
+                      value={consumption}
+                      onChange={(e) => setConsumption(parseInt(e.target.value))}
+                      className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-emerald-400" 
+                    />
+                    <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                      <span>2 000 kWh</span>
+                      <span>35 000 kWh</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 pt-6 border-t border-white/10">
+                    <div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Nykyinen kulu</div>
+                      <div className="text-xl font-bold">{Math.round(currentCost).toLocaleString('fi-FI')} € / vuosi</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1">Uusi arvioitu kulu</div>
+                      <div className="text-xl font-bold text-emerald-400">{Math.round(currentCost - maxSavings).toLocaleString('fi-FI')} - {Math.round(currentCost - minSavings).toLocaleString('fi-FI')} €</div>
+                    </div>
+                  </div>
+
+                  <div className="pt-6 border-t border-white/10">
+                    <div className="text-sm text-slate-400 mb-2 uppercase font-bold tracking-widest">Arvioitu vuosisäästö:</div>
+                    <div className="text-5xl font-bold text-emerald-400">
+                      {Math.round(minSavings).toLocaleString('fi-FI')} - {Math.round(maxSavings).toLocaleString('fi-FI')} €
+                    </div>
+                    
+                    <div className="mt-6 p-4 bg-emerald-400/10 rounded-2xl border border-emerald-400/20">
+                      <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1">Takaisinmaksuaika</div>
+                      <div className="text-2xl font-bold text-white">
+                        n. {paybackYears.toFixed(1).replace('.', ',')} vuotta
+                      </div>
+                      <div className="text-[10px] text-slate-400 mt-1 italic">
+                        *Laskettu {pumpCost} € hankintahinnalla
+                      </div>
+                    </div>
+
+                    <div className="text-[10px] text-slate-500 mt-4 leading-relaxed uppercase font-bold tracking-wider">
+                      *Laskelma perustuu 0,15€/kWh hintaan ja 40-60% säästöön lämmityskuluissa.
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="hidden lg:block">
+                <img 
+                  src="https://picsum.photos/seed/heatpump/600/600" 
+                  alt="Ilmalämpöpumppu" 
+                  className="rounded-full border-8 border-white/5 shadow-2xl"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Pricing Section */}
         <section id="hinnasto" className="section-padding">
           <div className="text-center mb-16">
@@ -359,10 +483,65 @@ export default function App() {
               </div>
             ))}
           </div>
-          <div className="mt-12 p-6 bg-slate-50 rounded-2xl text-center border border-dashed border-slate-300">
-            <p className="text-slate-600">
-              Isommat urakat ja projektit laskemme aina tapauskohtaisesti. <a href="#yhteys" className="text-brand-accent font-bold hover:underline">Pyydä ilmainen arviokäynti!</a>
-            </p>
+          
+          <div className="mt-12 grid md:grid-cols-2 gap-8">
+            <div className="bg-emerald-50 p-8 rounded-3xl border border-emerald-100">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="bg-emerald-500 text-white p-2 rounded-lg">
+                  <ShieldCheck size={24} />
+                </div>
+                <h4 className="text-xl font-bold">Kotitalousvähennys -60%</h4>
+              </div>
+              <p className="text-slate-600 mb-4">
+                Muista hyödyntää kotitalousvähennys työn osuudesta! Vuonna 2026 voit vähentää jopa 60 % työn hinnasta verotuksessasi.
+              </p>
+              <a href="https://www.vero.fi/henkiloasiakkaat/verokortti-ja-veroilmoitus/tulot-ja-vahennykset/kotitalousvahennys/" target="_blank" className="text-emerald-600 font-bold hover:underline flex items-center gap-2">
+                Lue lisää Verohallinnon sivuilta <ChevronRight size={16} />
+              </a>
+            </div>
+            <div className="bg-slate-50 p-8 rounded-3xl border border-slate-200">
+              <h4 className="text-xl font-bold mb-4">Muut veloitukset</h4>
+              <ul className="space-y-3 text-slate-600">
+                <li className="flex justify-between"><span>Huoltoautomaksu (sis. 20km)</span> <span className="font-bold">45 €</span></li>
+                <li className="flex justify-between"><span>Pientarvikelisä</span> <span className="font-bold">15 €</span></li>
+                <li className="flex justify-between"><span>Minimiveloitus</span> <span className="font-bold">2 h</span></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="bg-white py-24 border-t border-slate-100">
+          <div className="section-padding">
+            <div className="text-center mb-16">
+              <h2 className="text-sm font-bold text-brand-accent uppercase tracking-widest mb-3">Usein kysyttyä</h2>
+              <h3 className="text-4xl font-bold">Asiantuntijan vastaukset</h3>
+            </div>
+            <div className="max-w-3xl mx-auto space-y-6">
+              {[
+                {
+                  q: "Mitä tehdä, jos putki vuotaa?",
+                  a: "Sulje välittömästi asunnon päävesihana. Jos kyseessä on kerrostalo, ota yhteys huoltoyhtiöön. Soita sitten päivystysnumeroomme 040 123 4567 – olemme paikalla nopeasti."
+                },
+                {
+                  q: "Kuinka usein ilmalämpöpumppu tulisi huoltaa?",
+                  a: "Suosittelemme ammattilaishuoltoa 2-3 vuoden välein. Suodattimet kannattaa kuitenkin imuroida itse vähintään kerran kuukaudessa parhaan hyödyn varmistamiseksi."
+                },
+                {
+                  q: "Miten kotitalousvähennys haetaan?",
+                  a: "Me toimitamme sinulle laskun, jossa työn osuus on eritelty selkeästi. Voit ilmoittaa nämä tiedot suoraan OmaVero-palvelussa."
+                }
+              ].map((faq, idx) => (
+                <div key={idx} className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                  <h4 className="text-lg font-bold mb-2 flex items-center gap-3">
+                    <span className="text-brand-accent">Q:</span> {faq.q}
+                  </h4>
+                  <p className="text-slate-600 leading-relaxed">
+                    <span className="font-bold text-brand-blue">A:</span> {faq.a}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -514,6 +693,22 @@ export default function App() {
             <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-brand-blue hover:border-brand-blue transition-all cursor-pointer">
               <span className="font-bold">in</span>
             </div>
+          </div>
+        </div>
+        
+        {/* Certification Logos */}
+        <div className="max-w-7xl mx-auto px-6 mt-12 pt-8 border-t border-slate-200 flex flex-wrap justify-center items-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all">
+          <div className="flex items-center gap-2 font-bold text-slate-400">
+            <ShieldCheck size={24} /> AA-LUOTTOLUOKITUS
+          </div>
+          <div className="flex items-center gap-2 font-bold text-slate-400">
+            <CheckCircle2 size={24} /> LUOTETTAVA KUMPPANI
+          </div>
+          <div className="flex items-center gap-2 font-bold text-slate-400">
+            <Wrench size={24} /> LVI-TUOTE JÄSEN
+          </div>
+          <div className="flex items-center gap-2 font-bold text-slate-400 italic">
+            SUOMALAISTA PALVELUA
           </div>
         </div>
       </footer>
