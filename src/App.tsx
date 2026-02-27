@@ -4,16 +4,16 @@
  */
 
 import { useState, useEffect } from 'react';
-import { 
-  Phone, 
-  Mail, 
-  MapPin, 
-  Star, 
-  CheckCircle2, 
-  Clock, 
-  ShieldCheck, 
-  ChevronRight, 
-  Menu, 
+import {
+  Phone,
+  Mail,
+  MapPin,
+  Star,
+  CheckCircle2,
+  Clock,
+  ShieldCheck,
+  ChevronRight,
+  Menu,
   X,
   Droplets,
   Wind,
@@ -107,6 +107,10 @@ export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [consumption, setConsumption] = useState(15000);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [showToast, setShowToast] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCalculating, setIsCalculating] = useState(false);
 
   const electricityPrice = 0.15; // €/kWh
   const pumpCost = 2200; // Keskimääräinen hinta asennettuna
@@ -124,6 +128,23 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-32 md:bottom-12 left-1/2 -translate-x-1/2 z-[100] bg-brand-blue text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border border-white/10 backdrop-blur-xl"
+          >
+            <div className="bg-emerald-500 p-1 rounded-full text-white">
+              <CheckCircle2 size={16} />
+            </div>
+            <span className="font-bold">Viesti lähetetty! Palaamme pian.</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Top Bar */}
       <div className="bg-brand-blue text-white py-2 px-6 text-sm hidden md:block">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -131,16 +152,24 @@ export default function App() {
             <a href="tel:+358401234567" className="flex items-center gap-2 text-emerald-400 font-bold hover:text-white transition-colors">
               <Phone size={14} /> 040 123 4567
             </a>
-            <div className="flex items-center gap-2 text-emerald-400 font-bold">
-              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              PÄIVYSTYS 24/7
+            <div className="flex items-center gap-2 text-emerald-400 font-bold group">
+              <div className="relative">
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                <div className="absolute inset-0 w-2 h-2 bg-emerald-400 rounded-full animate-ping opacity-75" />
+              </div>
+              VASTAAMME NYT: <span className="text-white">~15 MIN</span>
             </div>
-            <a href="mailto:info@puhdasputki.fi" className="hidden lg:flex items-center gap-2 hover:text-emerald-400 transition-colors">
-              <Mail size={14} /> info@puhdasputki.fi
+            <a href="mailto:info@puhdasputki.fi" className="hidden lg:flex items-center gap-2 hover:text-emerald-400 transition-colors" aria-label="Lähetä sähköpostia osoitteeseen info@puhdasputki.fi">
+              <Mail size={14} aria-hidden="true" /> info@puhdasputki.fi
             </a>
           </div>
-          <div className="flex items-center gap-2">
-            <MapPin size={14} /> Palvelemme: Espoo, Helsinki, Vantaa
+          <div className="flex items-center gap-6">
+            <div className="hidden sm:flex items-center gap-2 text-[10px] font-black uppercase tracking-widest bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30">
+              <ShieldCheck size={10} /> 2H VASTAUSTAKUU
+            </div>
+            <div className="flex items-center gap-2">
+              <MapPin size={14} /> Palvelemme: Espoo, Helsinki, Vantaa
+            </div>
           </div>
         </div>
       </div>
@@ -171,18 +200,20 @@ export default function App() {
           </div>
 
           {/* Mobile Menu Toggle */}
-          <button 
+          <button
             className="md:hidden p-2 text-brand-blue"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label={isMenuOpen ? "Sulje valikko" : "Avaa valikko"}
+            aria-expanded={isMenuOpen}
           >
-            {isMenuOpen ? <X /> : <Menu />}
+            {isMenuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
           </button>
         </div>
 
         {/* Mobile Nav */}
         <AnimatePresence>
           {isMenuOpen && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
@@ -201,19 +232,20 @@ export default function App() {
 
       <main>
         {/* Hero Section */}
-        <section className="relative min-h-[80vh] flex items-center overflow-hidden bg-slate-900">
+        <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-slate-900">
           <div className="absolute inset-0 z-0">
-            <img 
-              src="https://picsum.photos/seed/hvac-service/1920/1080?blur=2" 
-              alt="LVI-huolto" 
-              className="w-full h-full object-cover opacity-40"
-              referrerPolicy="no-referrer"
+            <img
+              src="/images/hero.png"
+              alt="PuhdasPutken LVI-asentaja huoltamassa ilmalämpöpumppua ammattitaidolla"
+              width={1920}
+              height={1080}
+              className="w-full h-full object-cover opacity-60 scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-brand-blue via-brand-blue/80 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-brand-blue via-brand-blue/60 to-transparent" />
           </div>
 
           <div className="section-padding relative z-10 w-full">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
@@ -223,23 +255,23 @@ export default function App() {
                 <div className="flex text-yellow-400">
                   {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
                 </div>
-                <span className="text-sm font-medium">5.0 | 270+ Google-arvostelua</span>
+                <span className="text-sm font-medium">5.0 | 50+ Google-arvostelua</span>
               </div>
-              
+
               <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
-                Ammattitaitoa, jolla on <span className="text-brand-accent">kasvot.</span>
+                Puhdas Putki – Luotettavat <span className="text-brand-accent">LVI-palvelut</span> ja putkimies.
               </h1>
-              
+
               <p className="text-xl text-slate-300 mb-10 leading-relaxed">
-                Putkimies <span className="text-white font-semibold">Helsinki, Espoo & Vantaa</span>. Nopeutta, johon voit luottaa. Hintaa, joka ei yllätä.
+                Nykyaikainen LVI-huolto, joka maksaa itsensä takaisin. <span className="text-white font-semibold">Helsinki, Espoo & Vantaa</span>. Ammattitaitoa, johon voit luottaa.
               </p>
-              
+
               <div className="flex flex-col sm:flex-row gap-4">
                 <a href="#yhteys" className="btn-primary text-lg px-8">
-                  Varaa huolto <ArrowRight size={20} />
+                  Pyydä maksuton arvio <ArrowRight size={20} />
                 </a>
                 <a href="#palvelut" className="btn-secondary bg-transparent border-white text-white hover:bg-white hover:text-brand-blue text-lg px-8">
-                  Tutustu palveluihin
+                  Katso hinnasto
                 </a>
               </div>
             </motion.div>
@@ -249,8 +281,8 @@ export default function App() {
         {/* Services Section */}
         <section id="palvelut" className="section-padding">
           <div className="text-center mb-16">
-            <h2 className="text-sm font-bold text-brand-accent uppercase tracking-widest mb-3">Palvelumme</h2>
-            <h3 className="text-4xl md:text-5xl font-bold mb-6">Kattavat LVI-ratkaisut kotiisi</h3>
+            <h2 className="text-sm font-bold text-brand-accent uppercase tracking-widest mb-3">LVI-palvelumme</h2>
+            <h3 className="text-4xl md:text-5xl font-bold mb-6">Kattavat LVI-ratkaisut Helsinki, Espoo & Vantaa</h3>
             <p className="text-slate-600 max-w-2xl mx-auto text-lg">
               Tarjoamme alan uusinta osaamista ja tekniikkaa, jotta kotisi tekniikka toimii moitteettomasti vuoden ympäri.
             </p>
@@ -258,13 +290,13 @@ export default function App() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {SERVICES.map((service, idx) => (
-              <motion.div 
+              <motion.div
                 key={idx}
                 whileHover={{ y: -10 }}
                 className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex flex-col h-full"
               >
                 <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-6", service.color)}>
-                  <service.icon size={28} />
+                  <service.icon size={28} aria-hidden="true" />
                 </div>
                 <h4 className="text-xl font-bold mb-4">{service.title}</h4>
                 <p className="text-slate-600 mb-6 flex-grow">{service.description}</p>
@@ -284,34 +316,36 @@ export default function App() {
         <section className="bg-slate-50 py-24">
           <div className="section-padding grid lg:grid-cols-2 gap-16 items-center">
             <div className="relative">
-              <div className="aspect-square rounded-3xl overflow-hidden shadow-2xl">
-                <img 
-                  src="https://picsum.photos/seed/team-work/800/800" 
-                  alt="Tiimimme työssä" 
+              <div className="aspect-square rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
+                <img
+                  src="/images/installation.png"
+                  alt="Siisti ja ammattimainen LVI-asennus"
+                  width={800}
+                  height={800}
+                  loading="lazy"
                   className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
                 />
               </div>
-              <div className="absolute -bottom-8 -right-8 bg-white p-8 rounded-3xl shadow-xl max-w-xs hidden md:block">
+              <div className="absolute -bottom-8 -right-8 bg-white p-8 rounded-3xl shadow-xl max-w-xs hidden md:block border border-slate-100">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="bg-emerald-100 text-emerald-600 p-3 rounded-xl">
                     <ShieldCheck size={32} />
                   </div>
                   <div>
                     <div className="text-2xl font-bold">100%</div>
-                    <div className="text-sm text-slate-500">Tyytyväisyystakuu</div>
+                    <div className="text-sm text-slate-500 font-bold uppercase tracking-widest">Laatutakuu</div>
                   </div>
                 </div>
-                <p className="text-sm text-slate-600">
-                  Seisomme jokaisen asennuksen takana omilla kasvoillamme.
+                <p className="text-sm text-slate-600 leading-relaxed font-medium">
+                  Seisomme jokaisen asennuksen takana omilla kasvoillamme ja ammattitaidollamme.
                 </p>
               </div>
             </div>
 
             <div>
               <h2 className="text-sm font-bold text-brand-accent uppercase tracking-widest mb-3">Miksi valita meidät?</h2>
-              <h3 className="text-4xl md:text-5xl font-bold mb-8">Uuden sukupolven LVI-osaamista</h3>
-              
+              <h3 className="text-4xl md:text-5xl font-bold mb-8">Uuden sukupolven LVI-osaamista Uudellamaalla</h3>
+
               <div className="space-y-8">
                 {[
                   {
@@ -345,11 +379,52 @@ export default function App() {
           </div>
         </section>
 
+        {/* Quality Proof / Before-After Section */}
+        <section className="section-padding bg-white overflow-hidden">
+          <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-16 items-center">
+            <div className="order-2 lg:order-1">
+              <h2 className="text-sm font-bold text-brand-accent uppercase tracking-widest mb-3">Laatutakuu käytännössä</h2>
+              <h3 className="text-4xl font-bold mb-6">Ammattitaitoinen putkimies palveluksessasi</h3>
+              <p className="text-slate-600 text-lg mb-8 leading-relaxed">
+                Alla oleva kuva kertoo enemmän kuin tuhat sanaa. Vasemmalla tyypillinen saneerauskohde ennen työtämme, oikealla PuhdasPutki-asennus. Panostamme siisteyteen, turvallisuuteen ja tekniseen kestävyyteen.
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                  <div className="text-brand-accent font-bold text-2xl mb-1">100%</div>
+                  <div className="text-xs text-slate-500 font-bold uppercase tracking-widest">Vakuutettu työ</div>
+                </div>
+                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                  <div className="text-brand-accent font-bold text-2xl mb-1">5 v.</div>
+                  <div className="text-xs text-slate-500 font-bold uppercase tracking-widest">Asennustakuu</div>
+                </div>
+              </div>
+            </div>
+            <div className="order-1 lg:order-2 relative flex justify-center lg:justify-end">
+              <div className="rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-slate-50 max-w-sm lg:max-w-md">
+                <img
+                  src="/images/before_after.png"
+                  alt="Vertailukuva LVI-asennuksesta ennen ja jälkeen PuhdasPutki-huollon"
+                  width={600}
+                  height={800}
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
+                Ennen
+              </div>
+              <div className="absolute top-4 right-4 bg-emerald-500/80 backdrop-blur-md text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
+                Jälkeen
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Entrepreneur's Word Section */}
         <section id="meista" className="section-padding grid lg:grid-cols-2 gap-16 items-center border-b border-slate-100">
           <div>
             <h2 className="text-sm font-bold text-brand-accent uppercase tracking-widest mb-3">Yrittäjän sana</h2>
-            <h3 className="text-4xl font-bold mb-6">"Haluamme tehdä asiat paremmin"</h3>
+            <h3 className="text-4xl font-bold mb-6 text-brand-blue">"Haluamme tehdä asiat paremmin"</h3>
             <div className="space-y-4 text-slate-600 text-lg leading-relaxed">
               <p>
                 Perustimme PuhdasPutken, koska kyllästyimme alan epämääräisiin laskuihin ja siihen, ettei asentajaa saa kiinni hätätilanteessa.
@@ -358,21 +433,23 @@ export default function App() {
                 Meille jokainen asiakas on naapuri. Seisomme työmme takana omilla kasvoillamme ja varmistamme, että jälki on sellaista, jota kehtaa esitellä.
               </p>
               <div className="pt-6">
-                <div className="font-bold text-brand-blue">Antti Asentaja</div>
-                <div className="text-sm text-slate-500 italic">Toimitusjohtaja & Perustaja</div>
+                <div className="font-bold text-brand-blue text-xl">Antti Asentaja</div>
+                <div className="text-sm text-slate-500 font-bold uppercase tracking-widest">Toimitusjohtaja & Perustaja</div>
               </div>
             </div>
           </div>
           <div className="relative">
-            <img 
-              src="https://picsum.photos/seed/founder/600/400" 
-              alt="Yrittäjä Antti" 
-              className="rounded-3xl shadow-lg w-full object-cover aspect-[3/2]"
-              referrerPolicy="no-referrer"
+            <img
+              src="/images/owner.png"
+              alt="Yrittäjä Antti Asentaja, PuhdasPutken perustaja"
+              width={1200}
+              height={800}
+              loading="lazy"
+              className="rounded-3xl shadow-2xl w-full object-cover aspect-[3/2] border-4 border-white"
             />
             <div className="absolute -bottom-6 -left-6 bg-brand-accent text-white p-6 rounded-2xl shadow-xl">
               <div className="text-3xl font-bold">15+</div>
-              <div className="text-sm font-medium">Vuoden kokemus</div>
+              <div className="text-sm font-bold uppercase tracking-widest">Vuoden kokemus</div>
             </div>
           </div>
         </section>
@@ -387,7 +464,15 @@ export default function App() {
                 <p className="text-slate-300 text-lg mb-8">
                   Nykyaikainen ilmalämpöpumppu voi laskea lämmityskustannuksiasi jopa 40-60%. Kokeile laskuriamme ja näe arvioitu säästösi.
                 </p>
-                <div className="space-y-6 bg-white/5 p-8 rounded-3xl border border-white/10 backdrop-blur-sm">
+                <div className="space-y-6 bg-white/5 p-8 rounded-3xl border border-white/10 backdrop-blur-sm relative">
+                  {isCalculating && (
+                    <div className="absolute inset-0 bg-brand-blue/40 backdrop-blur-md z-20 flex items-center justify-center rounded-3xl">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-10 h-10 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
+                        <span className="text-sm font-bold text-emerald-400 uppercase tracking-widest">Lasketaan...</span>
+                      </div>
+                    </div>
+                  )}
                   <div className="space-y-4">
                     <div className="flex justify-between items-end">
                       <label className="text-sm font-bold uppercase tracking-wider text-slate-400">Vuosikulutus (kWh)</label>
@@ -396,14 +481,18 @@ export default function App() {
                         <span className="text-emerald-400/60 ml-2 font-bold">kWh</span>
                       </div>
                     </div>
-                    <input 
-                      type="range" 
-                      min="2000" 
-                      max="35000" 
-                      step="100" 
+                    <input
+                      type="range"
+                      min="2000"
+                      max="35000"
+                      step="100"
                       value={consumption}
-                      onChange={(e) => setConsumption(parseInt(e.target.value))}
-                      className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-emerald-400" 
+                      onChange={(e) => {
+                        setConsumption(parseInt(e.target.value));
+                        setIsCalculating(true);
+                        setTimeout(() => setIsCalculating(false), 400);
+                      }}
+                      className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-emerald-400"
                     />
                     <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest">
                       <span>2 000 kWh</span>
@@ -427,7 +516,7 @@ export default function App() {
                     <div className="text-5xl font-bold text-emerald-400">
                       {Math.round(minSavings).toLocaleString('fi-FI')} - {Math.round(maxSavings).toLocaleString('fi-FI')} €
                     </div>
-                    
+
                     <div className="mt-6 p-4 bg-emerald-400/10 rounded-2xl border border-emerald-400/20">
                       <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1">Takaisinmaksuaika</div>
                       <div className="text-2xl font-bold text-white">
@@ -445,11 +534,13 @@ export default function App() {
                 </div>
               </div>
               <div className="hidden lg:block">
-                <img 
-                  src="https://picsum.photos/seed/heatpump/600/600" 
-                  alt="Ilmalämpöpumppu" 
-                  className="rounded-full border-8 border-white/5 shadow-2xl"
-                  referrerPolicy="no-referrer"
+                <img
+                  src="/images/house_heatpump.png"
+                  alt="Moderni pientalo, jossa on energiatehokas ilmalämpöpumppu asennettuna"
+                  width={1000}
+                  height={600}
+                  loading="lazy"
+                  className="rounded-3xl border-8 border-white/5 shadow-2xl w-full h-auto object-cover"
                 />
               </div>
             </div>
@@ -459,7 +550,7 @@ export default function App() {
         {/* Pricing Section */}
         <section id="hinnasto" className="section-padding">
           <div className="text-center mb-16">
-            <h2 className="text-sm font-bold text-brand-accent uppercase tracking-widest mb-3">Hinnasto</h2>
+            <h2 className="text-sm font-bold text-brand-accent uppercase tracking-widest mb-3">LVI-hinnasto</h2>
             <h3 className="text-4xl md:text-5xl font-bold mb-6">Selkeä ja reilu hinnoittelu</h3>
             <p className="text-slate-600 max-w-2xl mx-auto text-lg">
               Uskomme, että rehellisyys on parasta asiakaspalvelua. Tässä yleisimmät palvelumme ja niiden hinnat.
@@ -479,21 +570,26 @@ export default function App() {
                     </li>
                   ))}
                 </ul>
-                <button className="btn-secondary w-full">Varaa tämä palvelu</button>
+                <button
+                  className="btn-secondary w-full"
+                  aria-label={`Varaa palvelu: ${item.service}`}
+                >
+                  Varaa tämä palvelu
+                </button>
               </div>
             ))}
           </div>
-          
+
           <div className="mt-12 grid md:grid-cols-2 gap-8">
             <div className="bg-emerald-50 p-8 rounded-3xl border border-emerald-100">
               <div className="flex items-center gap-4 mb-4">
                 <div className="bg-emerald-500 text-white p-2 rounded-lg">
                   <ShieldCheck size={24} />
                 </div>
-                <h4 className="text-xl font-bold">Kotitalousvähennys -60%</h4>
+                <h4 className="text-xl font-bold">Kotitalousvähennys -35%</h4>
               </div>
               <p className="text-slate-600 mb-4">
-                Muista hyödyntää kotitalousvähennys työn osuudesta! Vuonna 2026 voit vähentää jopa 60 % työn hinnasta verotuksessasi.
+                Muista hyödyntää kotitalousvähennys työn osuudesta! Vuonna 2026 voit vähentää jopa 35 % työn hinnasta verotuksessasi.
               </p>
               <a href="https://www.vero.fi/henkiloasiakkaat/verokortti-ja-veroilmoitus/tulot-ja-vahennykset/kotitalousvahennys/" target="_blank" className="text-emerald-600 font-bold hover:underline flex items-center gap-2">
                 Lue lisää Verohallinnon sivuilta <ChevronRight size={16} />
@@ -517,7 +613,7 @@ export default function App() {
               <h2 className="text-sm font-bold text-brand-accent uppercase tracking-widest mb-3">Usein kysyttyä</h2>
               <h3 className="text-4xl font-bold">Asiantuntijan vastaukset</h3>
             </div>
-            <div className="max-w-3xl mx-auto space-y-6">
+            <div className="max-w-3xl mx-auto space-y-4">
               {[
                 {
                   q: "Mitä tehdä, jos putki vuotaa?",
@@ -532,13 +628,37 @@ export default function App() {
                   a: "Me toimitamme sinulle laskun, jossa työn osuus on eritelty selkeästi. Voit ilmoittaa nämä tiedot suoraan OmaVero-palvelussa."
                 }
               ].map((faq, idx) => (
-                <div key={idx} className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                  <h4 className="text-lg font-bold mb-2 flex items-center gap-3">
-                    <span className="text-brand-accent">Q:</span> {faq.q}
-                  </h4>
-                  <p className="text-slate-600 leading-relaxed">
-                    <span className="font-bold text-brand-blue">A:</span> {faq.a}
-                  </p>
+                <div key={idx} className="bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden">
+                  <button
+                    onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                    className="w-full p-6 text-left flex justify-between items-center hover:bg-slate-100 transition-colors"
+                    aria-expanded={openFaq === idx}
+                    aria-controls={`faq-answer-${idx}`}
+                  >
+                    <h4 className="text-lg font-bold flex items-center gap-3">
+                      <span className="text-brand-accent" aria-hidden="true">Q:</span> {faq.q}
+                    </h4>
+                    <ChevronRight
+                      size={20}
+                      aria-hidden="true"
+                      className={cn("text-slate-400 transition-transform duration-300", openFaq === idx && "rotate-90 text-brand-accent")}
+                    />
+                  </button>
+                  <AnimatePresence>
+                    {openFaq === idx && (
+                      <motion.div
+                        id={`faq-answer-${idx}`}
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="px-6 pb-6 text-slate-600 leading-relaxed">
+                          <span className="font-bold text-brand-blue" aria-hidden="true">A:</span> {faq.a}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               ))}
             </div>
@@ -556,7 +676,7 @@ export default function App() {
               <div className="flex items-center gap-4 bg-white/10 p-4 rounded-2xl backdrop-blur-sm border border-white/20">
                 <div className="text-right">
                   <div className="text-2xl font-bold">4.9 / 5.0</div>
-                  <div className="text-sm text-slate-300">278 Google-arvostelua</div>
+                  <div className="text-sm text-slate-300">50+ Google-arvostelua</div>
                 </div>
                 <div className="bg-white p-2 rounded-lg">
                   <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" alt="Google" className="h-6" />
@@ -596,33 +716,58 @@ export default function App() {
                   Tarvitsetko huoltoa, asennusta tai tarjouksen? Jätä viesti, niin palaamme asiaan viimeistään seuraavana arkipäivänä.
                 </p>
 
-                <form className="space-y-6">
+                <form
+                  className="space-y-6"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setIsSubmitting(true);
+                    setTimeout(() => {
+                      setIsSubmitting(false);
+                      setShowToast(true);
+                      setTimeout(() => setShowToast(false), 5000);
+                    }, 1000);
+                  }}
+                >
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-sm font-bold uppercase tracking-wider text-slate-500">Nimi</label>
-                      <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all" placeholder="Matti Meikäläinen" />
+                      <label htmlFor="form-name" className="text-sm font-bold uppercase tracking-wider text-slate-500">Nimi</label>
+                      <input id="form-name" required type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all" placeholder="Matti Meikäläinen" />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-bold uppercase tracking-wider text-slate-500">Puhelin</label>
-                      <input type="tel" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all" placeholder="040 123 4567" />
+                      <label htmlFor="form-phone" className="text-sm font-bold uppercase tracking-wider text-slate-500">Puhelin</label>
+                      <input id="form-phone" required type="tel" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all" placeholder="040 123 4567" />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold uppercase tracking-wider text-slate-500">Sähköposti</label>
-                    <input type="email" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all" placeholder="matti@esimerkki.fi" />
+                    <label htmlFor="form-email" className="text-sm font-bold uppercase tracking-wider text-slate-500">Sähköposti</label>
+                    <input id="form-email" required type="email" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all" placeholder="matti@esimerkki.fi" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold uppercase tracking-wider text-slate-500">Miten voimme auttaa?</label>
-                    <textarea rows={4} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all" placeholder="Kerro lyhyesti tarpeestasi..."></textarea>
+                    <label htmlFor="form-message" className="text-sm font-bold uppercase tracking-wider text-slate-500">Miten voimme auttaa?</label>
+                    <textarea id="form-message" required rows={4} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all" placeholder="Kerro lyhyesti tarpeestasi..."></textarea>
                   </div>
-                  <button type="submit" className="btn-primary w-full py-4 text-lg">Lähetä viesti</button>
+                  <button
+                    disabled={isSubmitting}
+                    type="submit"
+                    className={cn(
+                      "btn-primary w-full py-4 text-lg relative overflow-hidden",
+                      isSubmitting && "opacity-80 cursor-not-allowed"
+                    )}
+                  >
+                    {isSubmitting ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Lähetetään...
+                      </div>
+                    ) : "Lähetä viesti"}
+                  </button>
                 </form>
               </div>
 
               <div className="bg-slate-900 p-12 md:p-16 text-white flex flex-col justify-between relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-brand-accent/10 rounded-full blur-3xl -mr-32 -mt-32" />
                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -ml-32 -mb-32" />
-                
+
                 <div className="relative z-10">
                   <h4 className="text-2xl font-bold mb-10">Yhteystiedot</h4>
                   <div className="space-y-8">
@@ -687,15 +832,23 @@ export default function App() {
             <a href="#" className="hover:text-brand-accent transition-colors">Evästeet</a>
           </div>
           <div className="flex gap-4">
-            <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-brand-blue hover:border-brand-blue transition-all cursor-pointer">
-              <span className="font-bold">f</span>
+            <div
+              role="button"
+              aria-label="Seuraa meitä Facebookissa"
+              className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-brand-blue hover:border-brand-blue transition-all cursor-pointer"
+            >
+              <span className="font-bold" aria-hidden="true">f</span>
             </div>
-            <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-brand-blue hover:border-brand-blue transition-all cursor-pointer">
-              <span className="font-bold">in</span>
+            <div
+              role="button"
+              aria-label="Seuraa meitä LinkedInissä"
+              className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-brand-blue hover:border-brand-blue transition-all cursor-pointer"
+            >
+              <span className="font-bold" aria-hidden="true">in</span>
             </div>
           </div>
         </div>
-        
+
         {/* Certification Logos */}
         <div className="max-w-7xl mx-auto px-6 mt-12 pt-8 border-t border-slate-200 flex flex-wrap justify-center items-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all">
           <div className="flex items-center gap-2 font-bold text-slate-400">
