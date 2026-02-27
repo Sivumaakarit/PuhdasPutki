@@ -239,6 +239,7 @@ export default function App() {
               alt="PuhdasPutken LVI-asentaja huoltamassa ilmalämpöpumppua ammattitaidolla"
               width={1920}
               height={1080}
+              fetchPriority="high"
               className="w-full h-full object-cover opacity-60 scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-brand-blue via-brand-blue/60 to-transparent" />
@@ -251,11 +252,11 @@ export default function App() {
               transition={{ duration: 0.6 }}
               className="max-w-2xl text-white"
             >
-              <div className="flex items-center gap-2 mb-6 bg-white/10 backdrop-blur-sm w-fit px-4 py-1 rounded-full border border-white/20">
-                <div className="flex text-yellow-400">
+              <div className="flex items-center gap-2 mb-6 bg-slate-800/80 backdrop-blur-sm w-fit px-4 py-1 rounded-full border border-white/20">
+                <div className="flex text-yellow-400" aria-hidden="true">
                   {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
                 </div>
-                <span className="text-sm font-medium">5.0 | 50+ Google-arvostelua</span>
+                <span className="text-sm font-bold text-white">5.0 | 50+ Google-arvostelua</span>
               </div>
 
               <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
@@ -591,8 +592,14 @@ export default function App() {
               <p className="text-slate-600 mb-4">
                 Muista hyödyntää kotitalousvähennys työn osuudesta! Vuonna 2026 voit vähentää jopa 35 % työn hinnasta verotuksessasi.
               </p>
-              <a href="https://www.vero.fi/henkiloasiakkaat/verokortti-ja-veroilmoitus/tulot-ja-vahennykset/kotitalousvahennys/" target="_blank" className="text-emerald-600 font-bold hover:underline flex items-center gap-2">
-                Lue lisää Verohallinnon sivuilta <ChevronRight size={16} />
+              <a
+                href="https://www.vero.fi/henkiloasiakkaat/verokortti-ja-veroilmoitus/tulot-ja-vahennykset/kotitalousvahennys/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-700 font-bold hover:underline flex items-center gap-2"
+                aria-label="Lue lisää kotitalousvähennyksestä Verohallinnon sivuilta (avautuu uuteen välilehteen)"
+              >
+                Lue lisää Verohallinnon sivuilta <ChevronRight size={16} aria-hidden="true" />
               </a>
             </div>
             <div className="bg-slate-50 p-8 rounded-3xl border border-slate-200">
@@ -827,9 +834,9 @@ export default function App() {
             © 2026 PuhdasPutki Oy. Kaikki oikeudet pidätetään.
           </div>
           <div className="flex gap-8 text-sm font-medium text-slate-600">
-            <a href="#" className="hover:text-brand-accent transition-colors">Tietosuoja</a>
-            <a href="#" className="hover:text-brand-accent transition-colors">Toimitusehdot</a>
-            <a href="#" className="hover:text-brand-accent transition-colors">Evästeet</a>
+            <a href="#tietosuoja" className="hover:text-brand-accent transition-colors" aria-label="Lue tietosuojaseloste">Tietosuoja</a>
+            <a href="#ehdot" className="hover:text-brand-accent transition-colors" aria-label="Lue toimitusehdot">Toimitusehdot</a>
+            <a href="#evasteet" className="hover:text-brand-accent transition-colors" aria-label="Lue evästekäytännöt">Evästeet</a>
           </div>
           <div className="flex gap-4">
             <div
