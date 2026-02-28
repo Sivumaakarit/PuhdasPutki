@@ -235,11 +235,12 @@ export default function App() {
         <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-slate-900">
           <div className="absolute inset-0 z-0">
             <img
-              src="/images/hero.png"
+              src="/images/hero.webp"
               alt="PuhdasPutken LVI-asentaja huoltamassa ilmalämpöpumppua ammattitaidolla"
               width={1920}
               height={1080}
               fetchPriority="high"
+              loading="eager"
               className="w-full h-full object-cover opacity-60 scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-brand-blue via-brand-blue/60 to-transparent" />
